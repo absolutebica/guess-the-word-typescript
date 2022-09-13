@@ -24,15 +24,7 @@ const FORM_CONTAINER_CLASS = document.querySelector(".form-container") as HTMLDi
 let SELECTED_WORD:string = '';
 let GUESSES_LIMIT:number = 6;
 
-interface Game {
-	name: string,
-	selectedWord: string,
-	guessesLimit: number,
-	wrongGuesses: string[],
-	correctGuesses: string[]
-}
-
-class GuessTheWordGame implements Game {
+class GuessTheWordGame {
 	name: string;
 	selectedWord: string;
 	guessesLimit: number;
