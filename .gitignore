@@ -5,8 +5,8 @@ thumbs.db
 
 build/*
 !build/index.html
-!build/img/*
-!build/css/*
+!build/img/
+!build/css/
 
 TODO
 
