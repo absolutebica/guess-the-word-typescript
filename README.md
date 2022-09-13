@@ -1,2 +1,2 @@
-# guess-the-word-typescript
-Guess the Word game in typescript
+# guess-the-word
+Guess the Word Game with TypeScript

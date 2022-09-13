@@ -1,4 +1,4 @@
-const WORD_LIST = [
+const WORD_LIST:string[] = [
 	"banish",
 	"brave",
 	"front",
@@ -11,21 +11,36 @@ const WORD_LIST = [
 	"copper"
   ];
   
-const MESSAGE_CLASS = document.querySelector(".message");
-const WIP_CLASS = document.querySelector(".word-in-progress");
-const GUESSES_REMAINING_CLASS = document.querySelector(".remaining");
-const GUESSED_LETTERS_CLASS = document.querySelector(".guessed-letters");
-const GUESS_BTN = document.querySelector("button.guess");
-const GUESS_INPUT_CLASS = document.querySelector("input.letter");
-const ALREADY_GUESSED_CLASS = document.querySelector(".already-guessed");
-const PLAY_AGAIN_BTN = document.querySelector("button.play-again");
-const FORM_CONTAINER_CLASS = document.querySelector(".form-container");
+const MESSAGE_CLASS = document.querySelector(".message") as HTMLParagraphElement;
+const WIP_CLASS = document.querySelector(".word-in-progress") as HTMLParagraphElement;
+const GUESSES_REMAINING_CLASS = document.querySelector(".remaining") as HTMLParagraphElement;
+const GUESSED_LETTERS_CLASS = document.querySelector(".guessed-letters") as HTMLUListElement;
+const GUESS_BTN = document.querySelector("button.guess") as HTMLButtonElement;
+const GUESS_INPUT_CLASS = document.querySelector("input.letter") as HTMLInputElement;
+const ALREADY_GUESSED_CLASS = document.querySelector(".already-guessed") as HTMLDivElement;
+const PLAY_AGAIN_BTN = document.querySelector("button.play-again") as HTMLButtonElement;
+const FORM_CONTAINER_CLASS = document.querySelector(".form-container") as HTMLDivElement;
 
-let SELECTED_WORD = '';
-let GUESSES_LIMIT = 6;
+let SELECTED_WORD:string = '';
+let GUESSES_LIMIT:number = 6;
 
-class GuessTheWordGame {
-	constructor(name) {
+interface Game {
+	name: string,
+	selectedWord: string,
+	guessesLimit: number,
+	wrongGuesses: string[],
+	correctGuesses: string[]
+}
+
+class GuessTheWordGame implements Game {
+	name: string;
+	selectedWord: string;
+	guessesLimit: number;
+	wrongGuesses: string[];
+	correctGuesses: string[];
+
+
+	constructor(name:string) {
 		this.name = name;
 		this.selectedWord = SELECTED_WORD;
 		this.guessesLimit = GUESSES_LIMIT;
@@ -49,17 +64,16 @@ class GuessTheWordGame {
 		document.addEventListener("keydown", this.onEnterKey.bind(this));
 	}
 
-	checkInputGuess(event) {
+	checkInputGuess() {
 		const letter = GUESS_INPUT_CLASS.value;
 		if (letter?.length && this.guessesLimit) {
 			this.testLetterInWord(letter);
 			GUESS_INPUT_CLASS.value = "";
 			this.setInputFocus();
 		}
-
 	}
 
-	onGuessInput(event) {
+	onGuessInput(event:KeyboardEvent) {
 		const isValid = /^[a-zA-Z]+$/.test(event.key);
 
 		if (!isValid) {
@@ -68,7 +82,7 @@ class GuessTheWordGame {
 		}
 	}
 
-	onEnterKey(event) {
+	onEnterKey(event:KeyboardEvent) {
 		const isEnterKey = event.key === "Enter";
 		const isGuessInputValid = !!GUESS_INPUT_CLASS.value;
 		if (isEnterKey && isGuessInputValid) {
@@ -76,7 +90,7 @@ class GuessTheWordGame {
 		}
 	}
 
-	testLetterInWord(letter) {
+	testLetterInWord(letter:string) {
 		const hasMatch = this.selectedWord.match(letter);
 		const allGuesses = [...this.correctGuesses, ...this.wrongGuesses];
 		const hasBeenGuessed = !!allGuesses.find(guess => guess.toLowerCase() === letter.toLowerCase());

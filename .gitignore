@@ -3,6 +3,11 @@ thumbs.db
 .vscode
 .eslintrc.json
 
+build/*
+!build/index.html
+!build/img/*
+!build/css/*
+
 TODO
 
 node_modules/
