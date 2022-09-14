@@ -9,7 +9,7 @@ const WORD_LIST:string[] = [
 	"tournament",
 	"recovery",
 	"copper"
-  ];
+];
   
 const MESSAGE_CLASS = document.querySelector(".message") as HTMLParagraphElement;
 const WIP_CLASS = document.querySelector(".word-in-progress") as HTMLParagraphElement;
@@ -23,14 +23,22 @@ const FORM_CONTAINER_CLASS = document.querySelector(".form-container") as HTMLDi
 
 let SELECTED_WORD:string = '';
 let GUESSES_LIMIT:number = 6;
+const SUCCESS_MESSAGE:string = "I can't believe you won. Great job Einstein!";
+const FAIL_MESSAGE:string = "Sorry! No soup for you!"
+
+type SelectedWordLetters = {
+	letter:string,
+	index: number,
+	used: boolean
+}
 
 class GuessTheWordGame {
 	name: string;
 	selectedWord: string;
+	selectedWordLetters: SelectedWordLetters[];
 	guessesLimit: number;
 	wrongGuesses: string[];
 	correctGuesses: string[];
-
 
 	constructor(name:string) {
 		this.name = name;
@@ -38,11 +46,13 @@ class GuessTheWordGame {
 		this.guessesLimit = GUESSES_LIMIT;
 		this.wrongGuesses = [];
 		this.correctGuesses = [];
+		this.selectedWordLetters = [];
 	}
 
 	render() {
 		MESSAGE_CLASS.innerHTML = `${this.name}, welcome to Guess the Word`;
 		this.selectedWord = this.selectRandomWord();
+		this.selectedWordLetters = [];
 		this.buildWordHTML();
 		this.initialRemainingGuesses()
 		this.events();
@@ -83,12 +93,15 @@ class GuessTheWordGame {
 	}
 
 	testLetterInWord(letter:string) {
-		const hasMatch = this.selectedWord.match(letter);
-		const allGuesses = [...this.correctGuesses, ...this.wrongGuesses];
-		const hasBeenGuessed = !!allGuesses.find(guess => guess.toLowerCase() === letter.toLowerCase());
-		if (!hasBeenGuessed) {
-			ALREADY_GUESSED_CLASS.classList.add("hide");
-			if (hasMatch) {
+		const regexp = new RegExp(letter, "g");
+		const letterMatchesCount:number = (this.selectedWord.match(regexp) || []).length;
+		const correctGuessesCount:number = this.correctGuesses.filter(guess => guess.toLowerCase() === letter.toLowerCase()).length;
+		const hasWrongMatch = !!this.wrongGuesses.filter(guess => guess.toLowerCase() === letter.toLowerCase()).length;
+
+		if (hasWrongMatch || (letterMatchesCount && correctGuessesCount >= letterMatchesCount)) {
+			ALREADY_GUESSED_CLASS.classList.remove("hide");
+		} else {
+			if (letterMatchesCount) {
 				this.correctGuesses.push(letter);
 				this.updateCorrectLetters();
 			} else {
@@ -96,20 +109,26 @@ class GuessTheWordGame {
 				this.wrongGuesses.push(letter);
 				this.updateIncorrectLetters();
 			}
-		} else {
-			ALREADY_GUESSED_CLASS.classList.remove("hide");
+
+			ALREADY_GUESSED_CLASS.classList.add("hide");
 		}
-		
-		this.updateRemainingGuessesMessage();
+
+		this.didYouWin();
 	}
 
 	updateCorrectLetters() {
 		this.correctGuesses.forEach(letter => {
-			const letterPosition = this.selectedWord.indexOf(letter);
+			const findLetter = this.selectedWordLetters.find(wordLetter => {
+				return wordLetter.letter.toLowerCase() === letter.toLowerCase()
+				&& !wordLetter.used;
+			});
+
+			const letterPosition = findLetter?.index ?? -1;
 			const letterElements = WIP_CLASS.children;
-			if (letterPosition > -1) {
+			if (letterPosition > -1 && findLetter) {
 				letterElements[letterPosition].innerHTML = letter;
 				letterElements[letterPosition].classList.remove("invalid-guess");
+				findLetter.used = true;
 			}
 		})
 	}
@@ -122,6 +141,8 @@ class GuessTheWordGame {
 			incorrectLetterElement.textContent = letter;
 			GUESSED_LETTERS_CLASS.append(incorrectLetterElement);
 		});
+
+		GUESSED_LETTERS_CLASS.classList.remove("hide");
 	}
 
 	initialRemainingGuesses() {
@@ -130,8 +151,9 @@ class GuessTheWordGame {
 	}
 
 	updateRemainingGuessesMessage() {
-		const guessMessage = this.guessesLimit ? `You have <span class="danger">${this.guessesLimit} incorrect guesses</span> remaining.` : 'Sorry! No soup for you!';
+		const guessMessage = this.guessesLimit ? `You have <span class="danger">${this.guessesLimit} incorrect guesses</span> remaining.` : FAIL_MESSAGE;
 		GUESSES_REMAINING_CLASS.innerHTML = guessMessage;
+		GUESSES_REMAINING_CLASS.classList.remove("hide");
 		this.updateButtonStates();
 	}
 
@@ -149,14 +171,22 @@ class GuessTheWordGame {
 	selectRandomWord() {
 		const wordListLength = WORD_LIST.length;
 		const randomNumber = Math.floor(Math.random() * wordListLength);
-	  
+		
 		return WORD_LIST[randomNumber];
 	}
 
 	buildWordHTML() {
 		const splitLetters = this.selectedWord.split('');
 		let HTML = '';
-		splitLetters.forEach(() => {
+		splitLetters.forEach((letter, index) => {
+			this.selectedWordLetters.push(
+				{
+					letter: letter,
+					index: index,
+					used: false
+				}
+			);
+			
 		  	HTML += `<span class="letter invalid-guess">
 			<span class="letter-char">&bull;</span>
 			</span>`;
@@ -167,6 +197,23 @@ class GuessTheWordGame {
 
 	setInputFocus() {
 		GUESS_INPUT_CLASS.focus();
+	}
+
+	didYouWin() {
+		if (this.selectedWord.length === this.correctGuesses.length) {
+			this.gameWon();
+		} else {
+			this.updateRemainingGuessesMessage();
+		}
+	}
+
+	gameWon() {
+		PLAY_AGAIN_BTN.classList.remove("hide");
+		GUESS_BTN.classList.add("hide");
+		FORM_CONTAINER_CLASS.classList.add("hide");
+		GUESSES_REMAINING_CLASS.classList.add("hide");
+		GUESSED_LETTERS_CLASS.classList.add("hide");
+		MESSAGE_CLASS.innerHTML = SUCCESS_MESSAGE;
 	}
 
 	startOver() {
