@@ -1,16 +1,3 @@
-const WORD_LIST:string[] = [
-	"banish",
-	"brave",
-	"front",
-	"convulsion",
-	"bland",
-	"cool",
-	"prove",
-	"tournament",
-	"recovery",
-	"copper"
-];
-  
 const MESSAGE_CLASS = document.querySelector(".message") as HTMLParagraphElement;
 const WIP_CLASS = document.querySelector(".word-in-progress") as HTMLParagraphElement;
 const GUESSES_REMAINING_CLASS = document.querySelector(".remaining") as HTMLParagraphElement;
@@ -21,6 +8,7 @@ const ALREADY_GUESSED_CLASS = document.querySelector(".already-guessed") as HTML
 const PLAY_AGAIN_BTN = document.querySelector("button.play-again") as HTMLButtonElement;
 const FORM_CONTAINER_CLASS = document.querySelector(".form-container") as HTMLDivElement;
 
+const WordAPI:string = 'https://random-word-api.herokuapp.com/word';
 let SELECTED_WORD:string = '';
 let GUESSES_LIMIT:number = 6;
 const SUCCESS_MESSAGE:string = "I can't believe you won. Great job Einstein!";
@@ -51,28 +39,29 @@ class GuessTheWordGame {
 
 	render() {
 		MESSAGE_CLASS.innerHTML = `${this.name}, welcome to Guess the Word`;
-		this.selectedWord = this.selectRandomWord();
-		this.selectedWordLetters = [];
-		this.buildWordHTML();
-		this.initialRemainingGuesses()
 		this.events();
-		this.setInputFocus();
+		this.newGame();
 	}
 
 	events() {
-		GUESS_BTN.addEventListener("click", this.checkInputGuess.bind(this));
-		PLAY_AGAIN_BTN.addEventListener("click", this.startOver.bind(this));
-		GUESS_INPUT_CLASS.addEventListener("keypress", this.onGuessInput);
-		document.addEventListener("keydown", this.onEnterKey.bind(this));
+		GUESS_BTN.addEventListener("click", event => this.onGuessButtonClick(event));
+		PLAY_AGAIN_BTN.addEventListener("click", event => this.startOver(event));
+		GUESS_INPUT_CLASS.addEventListener("keypress", event => this.onGuessInput(event));
+		document.addEventListener("keydown", event => this.onEnterKey(event));
 	}
 
-	checkInputGuess() {
-		const letter = GUESS_INPUT_CLASS.value;
-		if (letter?.length && this.guessesLimit) {
-			this.testLetterInWord(letter);
-			GUESS_INPUT_CLASS.value = "";
-			this.setInputFocus();
-		}
+	// Event Callbacks
+	onGuessButtonClick(event:MouseEvent) {
+		this.checkInputGuess();
+	}
+
+	startOver(event:MouseEvent) {
+		this.resetGame();
+		PLAY_AGAIN_BTN.classList.add("hide");
+		GUESS_BTN.classList.remove("hide");
+		FORM_CONTAINER_CLASS.classList.remove("hide");
+		GUESSED_LETTERS_CLASS.innerHTML = '';
+		this.render();
 	}
 
 	onGuessInput(event:KeyboardEvent) {
@@ -92,6 +81,17 @@ class GuessTheWordGame {
 		}
 	}
 
+	// End Event callbacks
+
+	checkInputGuess() {
+		const letter = GUESS_INPUT_CLASS.value;
+		if (letter?.length && this.guessesLimit) {
+			this.testLetterInWord(letter);
+			GUESS_INPUT_CLASS.value = "";
+			this.setInputFocus();
+		}
+	}
+
 	testLetterInWord(letter:string) {
 		const regexp = new RegExp(letter, "g");
 		const letterMatchesCount:number = (this.selectedWord.match(regexp) || []).length;
@@ -104,21 +104,22 @@ class GuessTheWordGame {
 			if (letterMatchesCount) {
 				this.correctGuesses.push(letter);
 				this.updateCorrectLetters();
+				this.didYouWin();
 			} else {
 				this.guessesLimit--;
 				this.wrongGuesses.push(letter);
 				this.updateIncorrectLetters();
+				this.updateRemainingGuessesMessage();
 			}
 
 			ALREADY_GUESSED_CLASS.classList.add("hide");
 		}
-
-		this.didYouWin();
 	}
 
 	updateCorrectLetters() {
 		this.correctGuesses.forEach(letter => {
 			const findLetter = this.selectedWordLetters.find(wordLetter => {
+				console.log("looped");
 				return wordLetter.letter.toLowerCase() === letter.toLowerCase()
 				&& !wordLetter.used;
 			});
@@ -145,9 +146,38 @@ class GuessTheWordGame {
 		GUESSED_LETTERS_CLASS.classList.remove("hide");
 	}
 
-	initialRemainingGuesses() {
+	setupWord() {
+		this.fetchRandomWord().then((word) => {
+			this.selectedWord = word;
+			this.setInitialRemainingGuesses();
+			this.buildWordMask();
+			this.updateRemainingGuessesMessage();
+			console.log(`Shhhh the word is ${word}`);
+		});
+	}
+
+	buildWordMask() {
+		const splitLetters = this.selectedWord.split('');
+		let HTML = '';
+		splitLetters.forEach((letter, index) => {
+			this.selectedWordLetters.push(
+				{
+					letter: letter,
+					index: index,
+					used: false
+				}
+			);
+			
+			  HTML += `<span class="letter invalid-guess">
+			<span class="letter-char">&bull;</span>
+			</span>`;
+		});
+	  
+		WIP_CLASS.innerHTML = HTML;
+	}
+
+	setInitialRemainingGuesses() {
 		this.guessesLimit = this.selectedWord.length + 2;
-		this.updateRemainingGuessesMessage();
 	}
 
 	updateRemainingGuessesMessage() {
@@ -168,31 +198,14 @@ class GuessTheWordGame {
 		GUESS_BTN.disabled = !this.guessesLimit;
 	}
 
-	selectRandomWord() {
-		const wordListLength = WORD_LIST.length;
-		const randomNumber = Math.floor(Math.random() * wordListLength);
-		
-		return WORD_LIST[randomNumber];
-	}
-
-	buildWordHTML() {
-		const splitLetters = this.selectedWord.split('');
-		let HTML = '';
-		splitLetters.forEach((letter, index) => {
-			this.selectedWordLetters.push(
-				{
-					letter: letter,
-					index: index,
-					used: false
-				}
-			);
-			
-		  	HTML += `<span class="letter invalid-guess">
-			<span class="letter-char">&bull;</span>
-			</span>`;
-		});
-	  
-		WIP_CLASS.innerHTML = HTML;
+	fetchRandomWord() {
+		return new Promise<string>(resolve => {
+			fetch(WordAPI)
+				.then(response => response.json())
+				.then(wordData => {
+					resolve(wordData?.[0])
+				});
+		})
 	}
 
 	setInputFocus() {
@@ -200,11 +213,9 @@ class GuessTheWordGame {
 	}
 
 	didYouWin() {
-		if (this.selectedWord.length === this.correctGuesses.length) {
-			this.gameWon();
-		} else {
-			this.updateRemainingGuessesMessage();
-		}
+		console.log(this.selectedWord.length, this.correctGuesses.length);
+		const isWinner = this.selectedWord.length === this.correctGuesses.length;
+		isWinner && this.gameWon();
 	}
 
 	gameWon() {
@@ -216,16 +227,21 @@ class GuessTheWordGame {
 		MESSAGE_CLASS.innerHTML = SUCCESS_MESSAGE;
 	}
 
-	startOver() {
+	newGame() {
+		this.resetGame();
+		this.setupWord();
+		this.setInputFocus();
+	}
+
+	resetGame() {
 		this.wrongGuesses = [];
 		this.correctGuesses = [];
 		this.guessesLimit = GUESSES_LIMIT;
-		PLAY_AGAIN_BTN.classList.add("hide");
-		GUESS_BTN.classList.remove("hide");
-		FORM_CONTAINER_CLASS.classList.remove("hide");
-		GUESSED_LETTERS_CLASS.innerHTML = '';
-		this.render();
+		this.selectedWordLetters = [];
+		this.selectedWord = SELECTED_WORD;
+		this.selectedWordLetters = [];
 	}
+
 }
 
 const newGame = new GuessTheWordGame("Bryan");
