@@ -8,12 +8,12 @@ const ALREADY_GUESSED_CLASS = document.querySelector(".already-guessed") as HTML
 const PLAY_AGAIN_BTN = document.querySelector("button.play-again") as HTMLButtonElement;
 const FORM_CONTAINER_CLASS = document.querySelector(".form-container") as HTMLDivElement;
 
-const WordAPI:string = 'https://random-word-api.herokuapp.com/word';
-const SUCCESS_MESSAGE:string = "I can't believe you won. Great job Einstein!";
-const FAIL_MESSAGE:string = "Sorry! No soup for you!"
-let SELECTED_WORD:string = '';
+const WordAPI = 'https://random-word-api.herokuapp.com/word';
+const SUCCESS_MESSAGE = "I can't believe you won. Great job Einstein!";
+const FAIL_MESSAGE = "Sorry! No soup for you!"
+const SELECTED_WORD = '';
 
-let GUESSES_LIMIT:number = 6;
+const GUESSES_LIMIT = 6;
 
 type SelectedWordLetters = {
 	letter:string,
@@ -168,11 +168,11 @@ class GuessTheWordGame {
 				}
 			);
 			
-			  HTML += `<span class="letter invalid-guess">
+			HTML += `<span class="letter invalid-guess">
 			<span class="letter-char">&bull;</span>
 			</span>`;
 		});
-	  
+		
 		WIP_CLASS.innerHTML = HTML;
 	}
 
