@@ -9,17 +9,17 @@ const PLAY_AGAIN_BTN = document.querySelector("button.play-again") as HTMLButton
 const FORM_CONTAINER_CLASS = document.querySelector(".form-container") as HTMLDivElement;
 
 const WordAPI:string = 'https://random-word-api.herokuapp.com/word';
-let SELECTED_WORD:string = '';
-let GUESSES_LIMIT:number = 6;
 const SUCCESS_MESSAGE:string = "I can't believe you won. Great job Einstein!";
 const FAIL_MESSAGE:string = "Sorry! No soup for you!"
+let SELECTED_WORD:string = '';
+
+let GUESSES_LIMIT:number = 6;
 
 type SelectedWordLetters = {
 	letter:string,
 	index: number,
 	used: boolean
 }
-
 class GuessTheWordGame {
 	name: string;
 	selectedWord: string;
