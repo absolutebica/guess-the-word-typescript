@@ -44,18 +44,18 @@ class GuessTheWordGame {
 	}
 
 	events() {
-		GUESS_BTN.addEventListener("click", event => this.onGuessButtonClick(event));
-		PLAY_AGAIN_BTN.addEventListener("click", event => this.startOver(event));
+		GUESS_BTN.addEventListener("click", this.onGuessButtonClick.bind(this));
+		PLAY_AGAIN_BTN.addEventListener("click", this.startOver.bind(this));
 		GUESS_INPUT_CLASS.addEventListener("keypress", event => this.onGuessInput(event));
 		document.addEventListener("keydown", event => this.onEnterKey(event));
 	}
 
 	// Event Callbacks
-	onGuessButtonClick(event:MouseEvent) {
+	onGuessButtonClick() {
 		this.checkInputGuess();
 	}
 
-	startOver(event:MouseEvent) {
+	startOver() {
 		this.resetGame();
 		PLAY_AGAIN_BTN.classList.add("hide");
 		GUESS_BTN.classList.remove("hide");
@@ -172,7 +172,7 @@ class GuessTheWordGame {
 			<span class="letter-char">&bull;</span>
 			</span>`;
 		});
-		
+
 		WIP_CLASS.innerHTML = HTML;
 	}
 
