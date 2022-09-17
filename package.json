@@ -2,6 +2,7 @@
   "name": "guess-the-word-typescript",
   "main": "index.js",
   "devDependencies": {
+    "@types/jest": "^29.0.3",
     "@typescript-eslint/eslint-plugin": "^5.37.0",
     "@typescript-eslint/parser": "^5.37.0",
     "eslint": "^8.23.1",
