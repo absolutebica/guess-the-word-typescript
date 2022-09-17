@@ -3,10 +3,8 @@
 }
 
 body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
   margin: 0;
+  padding: 15px;
   font-family: "Open Sans", sans-serif;
   font-style: normal;
   font-size: 20px;
@@ -35,6 +33,11 @@ h1 {
 }
 
 .container {
+  margin-top: 2rem;
+}
+
+.container,
+.game-container {
   background: radial-gradient(50% 50% at 50% 50%,
     rgba(167, 237, 237, 0.3) 0%,
     rgba(156, 226, 226, 0) 100%);
@@ -42,7 +45,6 @@ h1 {
   justify-content: center;
   flex-direction: column;
   align-items: center;
-  width: 90%;
 }
 
 .form-container {
@@ -131,8 +133,8 @@ h1 {
   text-align: center;
 }
 
-input {
-  width: 2.25em;
+.game-container input,
+.container input {
   text-align: center;
   font-size: 1.5em;
   margin-top: 0.5em;
@@ -140,14 +142,16 @@ input {
   border: 3px solid #28bdbd;
 }
 
-input:active,
-input:focus {
-  outline: 0;
-  border: 4px solid #28bdbd;
+.game-container input {
+  width: 2.25em;
 }
 
-.guess,
-.play-again {
+.container input {
+  width: 100%;
+  max-width: 500px;
+}
+
+button {
   padding: 1em 3em;
   border-radius: 50px;
   margin-top: 1em;
@@ -178,6 +182,39 @@ input:focus {
   background: linear-gradient(-45deg, #ff9d64, #f5620c);
   background-size: 400% 400%;
   animation: gradient 2s ease infinite;
+}
+
+.loader {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  position: relative;
+  animation: rotate 1s linear infinite
+}
+.loader::before , .loader::after {
+  content: "";
+  box-sizing: border-box;
+  position: absolute;
+  inset: 0px;
+  border-radius: 50%;
+  border: 5px solid #28bdbd;
+  animation: prixClipFix 2s linear infinite ;
+}
+.loader::after{
+  inset: 8px;
+  transform: rotate3d(90, 90, 0, 180deg );
+  border-color: #ff8d5c;
+}
+
+@keyframes rotate {
+  0%   {transform: rotate(0deg)}
+  100%   {transform: rotate(360deg)}
+}
+
+@keyframes prixClipFix {
+    0%   {clip-path:polygon(50% 50%,0 0,0 0,0 0,0 0,0 0)}
+    50%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 0,100% 0,100% 0)}
+    75%, 100%  {clip-path:polygon(50% 50%,0 0,100% 0,100% 100%,100% 100%,100% 100%)}
 }
 
 @keyframes gradient {

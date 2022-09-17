@@ -17,7 +17,7 @@ module.exports = {
     extensions: ['.tsx', '.ts', '.js'],
   },
   output: {
-    filename: 'js/index.js',
+    filename: 'js/script.js',
     path: path.resolve(__dirname, 'build'),
   },
 };
